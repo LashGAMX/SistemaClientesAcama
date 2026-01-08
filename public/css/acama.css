@@ -1,0 +1,10 @@
+/* Cambia el color de fondo principal de toda la página */
+body {
+    background-color: #f0f0f0 !important; /* Gris claro */
+    color: #333333; /* Color de texto predeterminado */
+}
+
+/* Si quieres cambiar el fondo del área principal de contenido */
+.main-content {
+    background-color: #ffffff; /* Fondo blanco para el contenido */
+}
