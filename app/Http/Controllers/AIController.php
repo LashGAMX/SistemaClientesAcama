@@ -12,8 +12,8 @@ class AIController extends Controller
     {
         $question = $request->input('message');
 
-        $response = Http::post('http://127.0.0.1:11434/api/chat', [
-            'model' => 'deepseek-r1',
+        $response = Http::post('https://rolling-region-plots-science.trycloudflare.com/api/chat', [
+            'model' => 'llama3.1:8b',
             'messages' => [
                 ['role' => 'user', 'content' => $question]
             ]

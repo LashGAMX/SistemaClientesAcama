@@ -10,7 +10,7 @@ function getbuscarFolio(){
     let tabPuntos = document.getElementById("divPuntos")
     let tab = ''
 
-    let tabCotizacion = document.getElementById("divCotizacion").innerHTML = ``
+    // let tabCotizacion = document.getElementById("divCotizacion").innerHTML = ``
     let tabOrden = document.getElementById("divOrden").innerHTML = ``
     let tabMuestreo = document.getElementById("divMuestreo").innerHTML = ``
     let tabRecepcion = document.getElementById("divRecepcion").innerHTML = ``
@@ -29,7 +29,7 @@ function getbuscarFolio(){
         success: function (response) {
             console.log(response)
             tab += `
-                <select class="custom-select select2" id="selPunto" onchange="getSeguimiento()">
+                <select class="form-select select2" id="selPunto" onchange="getSeguimiento()">
                     <option selected>No hay punto de muestreo</option>
                     ${
                         $.map(response.puntos, function (item) {
@@ -46,7 +46,7 @@ function getbuscarFolio(){
     });
 }
 function getSeguimiento(){
-    let tabCotizacion = document.getElementById("divCotizacion")
+    // let tabCotizacion = document.getElementById("divCotizacion")
     let tabOrden = document.getElementById("divOrden")
     let tabMuestreo = document.getElementById("divMuestreo")
     let tabRecepcion = document.getElementById("divRecepcion")

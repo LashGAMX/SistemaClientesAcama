@@ -12,66 +12,107 @@ use Illuminate\Support\Facades\Http;
 class HomeController extends Controller
 {
     //
-    public function index(){
-    $model = DB::table('viewsolicitud2')
-    ->select('viewsolicitud2.*') // Selecciona TODAS las columnas de la vista principal
-    ->addSelect('solicitud_puntos.Punto') // Opcional: añade solo las columnas extras necesarias de la tabla unida
-    ->join('solicitud_puntos', 'viewsolicitud2.Id_solicitud', '=', 'solicitud_puntos.Id_solicitud')
-    // ... (otras condiciones) ...
-    ->where('Id_cliente', session('Id_cliente'))
-    ->where('Padre',0)
-    ->orderBy('viewsolicitud2.Id_solicitud', 'desc') 
-    ->get();
+    public function index()
+    {
+        $model = DB::table('viewsolicitud2')
+            ->select('viewsolicitud2.*') // Selecciona TODAS las columnas de la vista principal
+            ->addSelect('solicitud_puntos.Punto') // Opcional: añade solo las columnas extras necesarias de la tabla unida
+            ->join('solicitud_puntos', 'viewsolicitud2.Id_solicitud', '=', 'solicitud_puntos.Id_solicitud')
+            // ... (otras condiciones) ...
+            ->where('Id_cliente', session('Id_cliente'))
+            ->where('Padre', 0)
+            ->orderBy('viewsolicitud2.Id_solicitud', 'desc')
+            ->get();
 
+        // $completos = 
+        $lastFolio = DB::table('viewsolicitud2')
+            ->select('viewsolicitud2.*') // Selecciona TODAS las columnas de la vista principal
+            ->addSelect('solicitud_puntos.Punto') // Opcional: añade solo las columnas extras necesarias de la tabla unida
+            ->join('solicitud_puntos', 'viewsolicitud2.Id_solicitud', '=', 'solicitud_puntos.Id_solicitud')
+            // ... (otras condiciones) ...
+            ->where('Id_cliente', session('Id_cliente'))
+            ->where('Padre', 0)
+            ->orderBy('viewsolicitud2.Id_solicitud', 'desc')
+            ->first();
+        // dd($lastFolio);
+        $impresion = DB::table('impresion_informe')
+            ->where('Id_solicitud', $lastFolio->Id_solicitud)
+            ->get();
+        $impreso = 0;
+        if ($impresion->count()) {
+            $impreso = 1;
+        }
+        $campo = DB::table('solicitudes_generadas')
+            ->where('Id_solicitud', $lastFolio->Id_solicitud)
+            ->get();
+        $muestreo = 0;
+        if ($campo->count()) {
+            $muestreo = 1;
+        }
+        $recepcion = DB::table('proceso_analisis')
+            ->where('Id_solicitud', $lastFolio->Id_solicitud)
+            ->get();
+        $ingreso = 0;
+        if ($recepcion->count()) {
+            $ingreso = 1;
+        }
         $data = array(
+            'muestreo' => $muestreo,
+            'ingreso' => $ingreso,
+            'campo' => $campo,
+            'lastFolio' => $lastFolio,
+            'impreso' => $impreso,
             'model' => $model,
         );
 
-        return view('home',$data);
+        return view('home', $data);
     }
-    public function home2(){
+    public function home2()
+    {
         return view('home2');
     }
-    public function informes(){
+    public function informes()
+    {
         return view('informes');
     }
     public function comparacion()
-    { 
+    {
         // $cliente = DB::table('ViewClienteGeneral')->where('Id_cliente',session('Id_cliente'))->where('stdCliente', NULL)->get();
         $sucursal = DB::table('sucursales_cliente')->where('Id_cliente', session('Id_cliente'))->get();
         $data = array(
             'sucursal' => $sucursal,
         );
-        return view('comparacion',$data);
+        return view('comparacion', $data);
     }
-    public function seguimiento(){
+    public function seguimiento()
+    {
         return view('seguimiento');
     }
     public function getPreInforme(Request $res)
     {
-    
-        $solicitud = DB::table('viewsolicitud2')->where('Folio_servicio','LIKE','%'.$res->folio.'%')->where('Id_cliente',session('Id_cliente'))->get();
+
+        $solicitud = DB::table('viewsolicitud2')->where('Folio_servicio', 'LIKE', '%' . $res->folio . '%')->where('Id_cliente', session('Id_cliente'))->get();
         $puntoMuestreo = DB::table('solicitud_puntos')->where('Id_solicitud', $solicitud[0]->Id_solicitud)->first();
         $datoExtra = "";
         if ($solicitud->count()) {
-            $model = DB::table('ViewCodigoInforme')->where('Codigo','LIKE','%'.$res->folio.'%')->where('Num_muestra',1)->whereNotIn('Id_parametro', [67, 64, 358])->get();
+            $model = DB::table('ViewCodigoInforme')->where('Codigo', 'LIKE', '%' . $res->folio . '%')->where('Num_muestra', 1)->whereNotIn('Id_parametro', [67, 64, 358])->get();
 
-            $punto = DB::table('solicitud_puntos')->where('Id_solicitud',$solicitud[0]->Id_solicitud)->get();
+            $punto = DB::table('solicitud_puntos')->where('Id_solicitud', $solicitud[0]->Id_solicitud)->get();
 
             $cotModel = DB::table('cotizacion')->where('Id_cotizacion', $solicitud[0]->Id_cotizacion)->first();
             @$tipoReporte = DB::table('ViewDetalleCuerpos')->where('Id_detalle', $cotModel->Tipo_reporte)->first();
-            @$tipoReporte2 = DB::table('tipo_cuerpo')->where('Id_tipo',$cotModel->Tipo_reporte)->first();
-            
+            @$tipoReporte2 = DB::table('tipo_cuerpo')->where('Id_tipo', $cotModel->Tipo_reporte)->first();
+
             $limitesN = array();
-                $limitesC = array();
+            $limitesC = array();
             $comparacion = array();
             $aux = 0;
             $auxCom = "----";
             $limC = 0;
             foreach ($model as $item) {
-                 switch ($item->Id_parametro) {
+                switch ($item->Id_parametro) {
 
-                    
+
                     case 97:
                         $limC = round($item->Resultado2);
                         break;
@@ -129,7 +170,7 @@ class HomeController extends Controller
                         $limC = $item->Resultado2;
                         break;
 
-                    case 78: 
+                    case 78:
                         // case 350:
                         if ($item->Resultado2 > 0) {
                             if ($item->Resultado2 > 8) {
@@ -156,7 +197,7 @@ class HomeController extends Controller
                         }
                         break;
                     case 132:
-                    //case 350:
+                        //case 350:
                         if ($item->Resultado2 > 0) {
                             if ($item->Resultado >= 8) {
                                 $limC = "> 8";
@@ -169,7 +210,7 @@ class HomeController extends Controller
                         }
                         break;
                     case 350:
-                          $limC = $item->Resultado;
+                        $limC = $item->Resultado;
                         // break;
                         break;
                     case 133:
@@ -434,7 +475,7 @@ class HomeController extends Controller
                         }
                         break;
                 }
-                  switch ($solicitud[0]->Id_norma) { 
+                switch ($solicitud[0]->Id_norma) {
                     case 1:
                         @$limNo = DB::table('limitepnorma_001')->where('Id_categoria', $tipoReporte->Id_detalle)->where('Id_parametro', $item->Id_parametro)->get();
                         if ($limNo->count()) {
@@ -461,7 +502,6 @@ class HomeController extends Controller
                                     $aux = $limNo[0]->PromD;
                                     break;
                             }
-                    
                         } else {
                             $aux = "N/A";
                             $auxCon = "N/A";
@@ -492,9 +532,9 @@ class HomeController extends Controller
                         }
                         break;
                     case 27:
-                        if($solicitud[0]->Siralab == 1){
+                        if ($solicitud[0]->Siralab == 1) {
                             $limNo = DB::table('limite001_2021')->where('Id_parametro', $item->Id_parametro)->where('Id_categoria', 1)->get();
-                        }else{
+                        } else {
                             $limNo = DB::table('limite001_2021')->where('Id_parametro', $item->Id_parametro)->where('Id_categoria', $solicitud[0]->Id_reporte2)->get();
                         }
                         if ($limNo->count()) {
@@ -513,10 +553,10 @@ class HomeController extends Controller
                 array_push($limitesC, $limC);
                 array_push($comparacion, $auxCom);
             }
-        
-        }else{
+        } else {
             $model = array();
         }
+        $model2 = DB::table('ViewCodigoInforme')->where('Codigo', 'LIKE', '%' . $res->folio . '%')->where('Num_muestra', 1)->whereNotIn('Id_parametro', [67, 64, 358])->select('Parametro','Resultado2')->get();
 
         $data = array(
             'limitesC' => $limitesC,
@@ -524,20 +564,25 @@ class HomeController extends Controller
             'comparacion' => $comparacion,
             'solicitud' => $solicitud[0],
             'model' => $model,
+            'model2' => $model2,
             'limitesN' => $limitesN,
         );
         return response()->json($data);
     }
-    public function getInforme(Request $res)
-    {
+    public function getPreInformeExtra(Request $res){
+        $solicitud = DB::table('viewsolicitud2')->where('Folio_servicio', 'LIKE', '%' . $res->folio . '%')->where('Id_cliente', session('Id_cliente'))->first();
         
+        if($solicitud){
+            $solComparacion = DB::table('viewsolicitud2')->where('Id_sucursal', $solicitud->Id_sucursal)->where('Id_subnorma',$solicitud->Id_subnorma)->where('Padre',0)->where('Cancelaod',0)->where('Id_solicitud','<',$solicitud->Id_solicitud)->get();
+        }
     }
+    public function getInforme(Request $res) {}
     public function getPunto(Request $res)
     {
         $sw = false;
         $punto1 = DB::table('puntos_muestreo')->where('Id_sucursal', $res->id)->get();
         $punto2 = DB::table('puntos_muestreogen')->where('Id_sucursal', $res->id)->get();
-       
+
 
         $data = array(
             'punto1' => $punto1,
@@ -545,50 +590,152 @@ class HomeController extends Controller
         );
         return response()->json($data);
     }
-public function getComparar(Request $res)
-{
-    $folios = array();
-    $parametros = array();
-    $resultados = array();
-    $solicitud = DB::table('viewsolicitud2')
-                    ->where('Id_sucursal', $res->id)
-                    ->where('Id_cliente', session('Id_cliente'))
-                    ->where('Padre', 0)
-                    ->where('Cancelado', 0)
-                    ->whereBetween('Fecha_muestreo', [$res->fechaIni, $res->fechaFin])
+    public function getComparar(Request $res)
+    {
+        $folios = array();
+        $parametros = array();
+        $parametros2 = array();
+        $resultados = array();
+        $limitesN = array();
+             $aux = 0;
+        $solicitud = DB::table('viewsolicitud2')
+            ->where('Id_sucursal', $res->id)
+            ->where('Id_cliente', session('Id_cliente'))
+            ->where('Padre', 0)
+            ->where('Cancelado', 0)
+            ->whereBetween('Fecha_muestreo', [$res->fechaIni, $res->fechaFin])
+            ->get();
+
+        foreach ($solicitud as $item) {
+            $puntosTemp = DB::table('solicitud_puntos')
+                ->where('Id_solicitud', $item->Id_solicitud)
+                ->where('Id_muestreo', $res->punto)
+                ->get();
+
+            if ($puntosTemp->count()) {
+                // Guardamos el folio en el array de folios
+                array_push($folios, $item->Folio_servicio);
+
+                // Obtenemos los parámetros de esa solicitud
+                $tempParametros = DB::table('ViewCodigoInforme')
+                    ->where('Id_solicitud', $item->Id_solicitud)
+                    ->where('Num_muestra', 1)
+                    ->whereNotIn('Id_parametro', [67, 64, 358])
                     ->get();
 
-    foreach ($solicitud as $item) {
-        $puntosTemp = DB::table('solicitud_puntos')
-            ->where('Id_solicitud', $item->Id_solicitud)
-            ->where('Id_muestreo', $res->punto)
-            ->get();
-        
-        if ($puntosTemp->count()) {
-            // Guardamos el folio en el array de folios
-            array_push($folios, $item->Folio_servicio);
+                       $tempParametros2 = DB::table('ViewCodigoInforme')
+                    ->where('Id_solicitud', $item->Id_solicitud)
+                    ->where('Num_muestra', 1)
+                    ->select('Parametro','Resultado2')
+                    ->whereNotIn('Id_parametro', [67, 64, 358])
+                    ->select('Parametro','Resultado2')
+                    ->get();
+                    // $model2 = DB::table('ViewCodigoInforme')->where('Codigo', 'LIKE', '%' . $res->folio . '%')->where('Num_muestra', 1)->whereNotIn('Id_parametro', [67, 64, 358])->select('Parametro','Resultado2')->get();
 
-            // Obtenemos los parámetros de esa solicitud
-            $tempParametros = DB::table('ViewCodigoInforme')
-                                ->where('Id_solicitud', $item->Id_solicitud)
-                                ->where('Num_muestra', 1)
-                                ->whereNotIn('Id_parametro', [67, 64, 358])
-                                ->get();
-            
-            // Y guardamos el array de parámetros en el array final
-            array_push($parametros, $tempParametros);
+
+                // Y guardamos el array de parámetros en el array final
+                array_push($parametros, $tempParametros);
+                array_push($parametros2, $tempParametros2);
+            }
         }
-    }
-    
-    $data = array(
-        'folios' => $folios,
-        'solicitud' => $solicitud,
-        'parametros' => $parametros,
-    );
+        $tempParametros = DB::table('ViewCodigoInforme')
+                        ->where('Id_solicitud', $solicitud[0]->Id_solicitud)
+                        ->where('Num_muestra', 1)
+                        ->whereNotIn('Id_parametro', [67, 64, 358])
+                        ->get();
+        $cotModel = DB::table('cotizacion')->where('Id_cotizacion', $solicitud[0]->Id_cotizacion)->first();
+        @$tipoReporte = DB::table('ViewDetalleCuerpos')->where('Id_detalle', $cotModel->Tipo_reporte)->first();
+        @$tipoReporte2 = DB::table('tipo_cuerpo')->where('Id_tipo', $cotModel->Tipo_reporte)->first();
 
-    return response()->json($data);
-}
-  public function ask(Request $request)
+        foreach ($tempParametros as $item) {
+                switch ($solicitud[0]->Id_norma) {
+                    case 1:
+                        @$limNo = DB::table('limitepnorma_001')->where('Id_categoria', $tipoReporte->Id_detalle)->where('Id_parametro', $item->Id_parametro)->get();
+                        if ($limNo->count()) {
+                            $aux = $limNo[0]->Prom_Dmax;
+                        } else {
+                            $aux = "N/A";
+                        }
+                        //comentarios
+                        break;
+                    case 2:
+                        $limNo = DB::table('limitepnorma_002')->where('Id_parametro', $item->Id_parametro)->get();
+                        if ($limNo->count()) {
+                            switch (@$solicitud[0]->Id_promedio) {
+                                case 1:
+                                    $aux = $limNo[0]->Instantaneo;
+                                    break;
+                                case 2:
+                                    $aux = $limNo[0]->PromM;
+                                    break;
+                                case 3:
+                                    $aux = $limNo[0]->PromD;
+                                    break;
+                                default:
+                                    $aux = $limNo[0]->PromD;
+                                    break;
+                            }
+                        } else {
+                            $aux = "N/A";
+                            $auxCon = "N/A";
+                        }
+                        break;
+                    case 30:
+                        $limNo = DB::table('limitepnorma_127')->where('Id_parametro', $item->Id_parametro)->get();
+                        if ($limNo->count()) {
+                            if ($limNo[0]->Per_min != "") {
+                                $aux = $limNo[0]->Per_min . " - " . $limNo[0]->Per_max;
+                            } else {
+                                $aux = $limNo[0]->Per_max;
+                            }
+                        } else {
+                            $aux = "N/A";
+                        }
+                        break;
+                    case 7:
+                        $limNo = DB::table('limitepnorma_201')->where('Id_parametro', $item->Id_parametro)->get();
+                        if ($limNo->count()) {
+                            if ($limNo[0]->Per_max != "") {
+                                $aux = $limNo[0]->Per_max;
+                            } else {
+                                $aux = "N/A";
+                            }
+                        } else {
+                            $aux = "N/A";
+                        }
+                        break;
+                    case 27:
+                        if ($solicitud[0]->Siralab == 1) {
+                            $limNo = DB::table('limite001_2021')->where('Id_parametro', $item->Id_parametro)->where('Id_categoria', 1)->get();
+                        } else {
+                            $limNo = DB::table('limite001_2021')->where('Id_parametro', $item->Id_parametro)->where('Id_categoria', $solicitud[0]->Id_reporte2)->get();
+                        }
+                        if ($limNo->count()) {
+                            $aux = $limNo[0]->Pd;
+                        } else {
+                            $aux = "N/A";
+                        }
+                        break;
+                    case 365:
+                        break;
+                    default:
+
+                        break;
+                }
+                array_push($limitesN, $aux);
+        }
+
+        $data = array(
+            'limitesN' => $limitesN,
+            'folios' => $folios,
+            'solicitud' => $solicitud,
+            'parametros' => $parametros,
+            'parametros2' => $parametros2,
+        );
+
+        return response()->json($data);
+    }
+    public function ask(Request $request)
     {
         $prompt = $request->input('prompt');
 
@@ -604,13 +751,13 @@ public function getComparar(Request $res)
             'response' => $ollama['message']['content'] ?? 'Sin respuesta'
         ]);
     }
-        public function getSeguimiento(Request $res)
+    public function getSeguimiento(Request $res)
     {
-        $model = DB::table('ViewSolicitud2')->where('Id_solicitud',$res->id)->first();
-        $proceso = DB::table('ViewProcesoAnalisis')->where('Id_solicitud',$res->id)->first();
-        $campo = DB::table('solicitudes_generadas')->where('Id_solicitud',$res->id)->first();
-        $informe = DB::table('impresion_informe')->where('Id_solicitud',$res->id)->get();
-        $codigo = DB::table('ViewCodigoRecepcion')->where('Id_solicitud',$res->id)->get();
+        $model = DB::table('ViewSolicitud2')->where('Id_solicitud', $res->id)->first();
+        $proceso = DB::table('ViewProcesoAnalisis')->where('Id_solicitud', $res->id)->first();
+        $campo = DB::table('solicitudes_generadas')->where('Id_solicitud', $res->id)->first();
+        $informe = DB::table('impresion_informe')->where('Id_solicitud', $res->id)->get();
+        $codigo = DB::table('ViewCodigoRecepcion')->where('Id_solicitud', $res->id)->get();
         $data = array(
             'codigo' => $codigo,
             'proceso' => $proceso,
@@ -622,8 +769,8 @@ public function getComparar(Request $res)
     }
     public function getbuscarFolio(Request $res)
     {
-        $model = DB::table('solicitudes')->where('Folio_servicio','LIKE','%'.$res->folio.'%')->where('Padre',1)->first();
-        $puntos = DB::table('solicitud_puntos')->where('Id_solPadre',$model->Id_solicitud)->get();
+        $model = DB::table('solicitudes')->where('Folio_servicio', 'LIKE', '%' . $res->folio . '%')->where('Padre', 1)->first();
+        $puntos = DB::table('solicitud_puntos')->where('Id_solPadre', $model->Id_solicitud)->get();
         $data = array(
             'puntos' => $puntos,
             'model' => $model,
