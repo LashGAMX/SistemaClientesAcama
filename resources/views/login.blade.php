@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en" dir="ltr">
   <head>
@@ -34,20 +33,52 @@
              background-color: #0A3640 !important;
          }
          #particles-js {
-  position: relative;
-}
+            position: relative;
+         }
 
-#particles-js canvas {
-  position: absolute !important;
-  inset: 0;
-  z-index: 0;
-}
+         #particles-js canvas {
+            position: absolute !important;
+            inset: 0;
+            z-index: 0;
+         }
 
-#particles-js img {
-  z-index: 1;
-}
+         /* Estilos para el carrusel */
+         .carousel-login {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+         }
 
-     </style>
+         .carousel-login .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2.5s ease-in-out;
+         }
+
+         .carousel-login .carousel-item.active {
+            opacity: 1;
+         }
+
+         .carousel-login img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+         }
+
+         /* Asegurar que el contenedor ocupe todo el espacio */
+         .col-md-6.bg-primary {
+            padding: 0 !important;
+            margin: 0 !important;
+         }
+      </style>
       
   </head>
   <body class=" " data-bs-spy="scroll" data-bs-target="#elements-section" data-bs-offset="0" tabindex="0">
@@ -56,7 +87,8 @@
       <div class="loader simple-loader">
           <div class="loader-body">
           </div>
-      </div>    </div>
+      </div>    
+    </div>
     <!-- loader END -->
     
       <div class="wrapper">
@@ -129,25 +161,48 @@
                   </svg>
                </div>
             </div>
-            <div class="col-md-6 d-md-block d-none bg-primary p-0 mt-n1 vh-100 overflow-hidden position-relative"
-     id="particles-js">
-
-    <!-- Imagen de fondo -->
-    <img src="{{asset('public/img/logofondo.jpg')}}"
-         class="img-fluid gradient-main animated-scaleX position-relative"
-         style="z-index:1"
-         alt="images">
-
-</div>
+            
+            <!-- Carrusel de imágenes -->
+            <div class="col-md-6 d-md-block d-none bg-primary p-0 vh-100 overflow-hidden position-relative" id="particles-js">
+               <div class="carousel-login">
+                  <div class="carousel-item active">
+                     <img src="{{asset('public/img/login1.jpeg')}}" 
+                          class="img-fluid gradient-main"
+                          alt="Login Image 1">
+                  </div>
+                  <div class="carousel-item">
+                     <img src="{{asset('public/img/login2.jpeg')}}" 
+                          class="img-fluid gradient-main"
+                          alt="Login Image 2">
+                  </div>
+               </div>
+            </div>
 
          </div>
       </section>
       </div>
     
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
+    <!-- Script para el carrusel -->
+    <script>
+      // Carrusel automático de imágenes
+      document.addEventListener('DOMContentLoaded', function() {
+         const items = document.querySelectorAll('.carousel-item');
+         let currentIndex = 0;
 
-   <script src="{{asset('public/js/login.js')}}"></script>
+         function showNextSlide() {
+            items[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % items.length;
+            items[currentIndex].classList.add('active');
+         }
+
+         // Cambiar cada 7 segundos (7000 ms) - era 5, ahora es 7
+         setInterval(showNextSlide, 7000);
+      });
+    </script>
+
+    <script src="{{asset('public/js/login.js')}}"></script>
     <!-- Library Bundle Script -->
     <script src="{{asset('public/assets/js/core/libs.min.js')}}"></script>
     

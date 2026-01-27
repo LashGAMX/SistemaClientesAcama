@@ -1360,6 +1360,21 @@
                 document.getElementById('modalNuevoServicio')
             ).hide();
         });
+
+        // Manejador global para errores AJAX
+$(document).ajaxError(function(event, jqxhr, settings, thrownError) {
+    if (jqxhr.status === 401) {
+        alert('Tu sesión ha expirado. Serás redirigido al login.');
+        window.location.href = '/login';
+    }
+});
+
+// Configurar token CSRF para todas las peticiones
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
     </script>
     @yield('js')
 </body>

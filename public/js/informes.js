@@ -256,7 +256,7 @@ function descargarGrafica() {
 
 async function getCompletion(prompt) {
     const response = await fetch(
-        'https://pushed-compaq-sep-lands.trycloudflare.com/iaollama/public/api/getRequest',
+        'https://pray-swim-wales-pace.trycloudflare.com/iaollama/public/api/getRequest',
         {
             method: 'POST',
             headers: {

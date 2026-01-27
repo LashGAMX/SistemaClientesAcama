@@ -388,7 +388,7 @@ async function getResumenIa(data) {
 async function getCompletion(prompt) {
     iniciarAnalisisIA()
     const response = await fetch(
-        'https://pushed-compaq-sep-lands.trycloudflare.com/iaollama/public/api/getRequest',
+        'https://pray-swim-wales-pace.trycloudflare.com/iaollama/public/api/getRequest',
         {
             method: 'POST',
             headers: {
